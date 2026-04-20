@@ -1,7 +1,23 @@
 import Card from "components/card";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { profileService } from "api/services/profile.service";
 
 const General = () => {
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: profileService.get,
+  });
+
+  const fields = [
+    { label: "Education", key: "education" },
+    { label: "Languages", key: "languages" },
+    { label: "Department", key: "department" },
+    { label: "Work History", key: "work_history" },
+    { label: "Organization", key: "organization" },
+    { label: "Birthday", key: "birthday" },
+  ];
+
   return (
     <Card extra={"w-full h-full p-3"}>
       {/* Header */}
@@ -10,56 +26,22 @@ const General = () => {
           General Information
         </h4>
         <p className="mt-2 px-2 text-base text-gray-600">
-          As we live, our hearts turn colder. Cause pain is what we go through
-          as we become older. We get insulted by others, lose trust for those
-          others. We get back stabbed by friends. It becomes harder for us to
-          give others a hand. We get our heart broken by people we love, even
-          that we give them all...
+          {isLoading ? "Loading..." : profile?.bio || "No bio available."}
         </p>
       </div>
       {/* Cards */}
       <div className="grid grid-cols-2 gap-4 px-2">
-        <div className="flex flex-col items-start justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Education</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            Stanford University
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Languages</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            English, Spanish, Italian
-          </p>
-        </div>
-
-        <div className="flex flex-col items-start justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Department</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            Product Design
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Work History</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            English, Spanish, Italian
-          </p>
-        </div>
-
-        <div className="flex flex-col items-start justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Organization</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            Simmmple Web LLC
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-          <p className="text-sm text-gray-600">Birthday</p>
-          <p className="text-base font-medium text-navy-700 dark:text-white">
-            20 July 1986
-          </p>
-        </div>
+        {fields.map((field) => (
+          <div
+            key={field.key}
+            className="flex flex-col items-start justify-center rounded-2xl bg-white bg-clip-border px-3 py-4 shadow-3xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none"
+          >
+            <p className="text-sm text-gray-600">{field.label}</p>
+            <p className="text-base font-medium text-navy-700 dark:text-white">
+              {isLoading ? "..." : profile?.[field.key] || "—"}
+            </p>
+          </div>
+        ))}
       </div>
     </Card>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import Dropdown from "components/dropdown";
 import { FiAlignJustify } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -10,11 +11,25 @@ import {
   IoMdNotificationsOutline,
   IoMdInformationCircleOutline,
 } from "react-icons/io";
-import avatar from "assets/img/avatars/avatar4.png";
+import { notificationsService } from "api/services/notifications.service";
+import { profileService } from "api/services/profile.service";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: notificationsService.getAll,
+  });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: profileService.get,
+  });
+
+  const userName = profile?.name || profile?.first_name || "User";
+  const avatarUrl = profile?.avatar || null;
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -83,33 +98,25 @@ const Navbar = (props) => {
                 </p>
               </div>
 
-              <button className="flex w-full items-center">
-                <div className="flex h-full w-[85px] items-center justify-center rounded-xl bg-gradient-to-b from-brandLinear to-brand-500 py-4 text-2xl text-white">
-                  <BsArrowBarUp />
-                </div>
-                <div className="ml-2 flex h-full w-full flex-col justify-center rounded-lg px-1 text-sm">
-                  <p className="mb-1 text-left text-base font-bold text-gray-900 dark:text-white">
-                    New Update: Horizon UI Dashboard PRO
-                  </p>
-                  <p className="font-base text-left text-xs text-gray-900 dark:text-white">
-                    A new update for your downloaded item is available!
-                  </p>
-                </div>
-              </button>
-
-              <button className="flex w-full items-center">
-                <div className="flex h-full w-[85px] items-center justify-center rounded-xl bg-gradient-to-b from-brandLinear to-brand-500 py-4 text-2xl text-white">
-                  <BsArrowBarUp />
-                </div>
-                <div className="ml-2 flex h-full w-full flex-col justify-center rounded-lg px-1 text-sm">
-                  <p className="mb-1 text-left text-base font-bold text-gray-900 dark:text-white">
-                    New Update: Horizon UI Dashboard PRO
-                  </p>
-                  <p className="font-base text-left text-xs text-gray-900 dark:text-white">
-                    A new update for your downloaded item is available!
-                  </p>
-                </div>
-              </button>
+              {notifications.length === 0 ? (
+                <p className="px-2 text-sm text-gray-500">No new notifications</p>
+              ) : (
+                notifications.map((n, idx) => (
+                  <button key={n.id || idx} className="flex w-full items-center">
+                    <div className="flex h-full w-[85px] items-center justify-center rounded-xl bg-gradient-to-b from-brandLinear to-brand-500 py-4 text-2xl text-white">
+                      <BsArrowBarUp />
+                    </div>
+                    <div className="ml-2 flex h-full w-full flex-col justify-center rounded-lg px-1 text-sm">
+                      <p className="mb-1 text-left text-base font-bold text-gray-900 dark:text-white">
+                        {n.title || "Notification"}
+                      </p>
+                      <p className="font-base text-left text-xs text-gray-900 dark:text-white">
+                        {n.message || n.description || ""}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           }
           classNames={"py-2 top-4 -left-[230px] md:-left-[440px] w-max"}
@@ -178,18 +185,24 @@ const Navbar = (props) => {
         {/* Profile & Dropdown */}
         <Dropdown
           button={
-            <img
-              className="h-10 w-10 rounded-full"
-              src={avatar}
-              alt="Elon Musk"
-            />
+            avatarUrl ? (
+              <img
+                className="h-10 w-10 cursor-pointer rounded-full"
+                src={avatarUrl}
+                alt="profile"
+              />
+            ) : (
+              <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
+                {userName?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+            )
           }
           children={
             <div className="flex w-56 flex-col justify-start rounded-[20px] bg-white bg-cover bg-no-repeat shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none">
               <div className="p-4">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-navy-700 dark:text-white">
-                    👋 Hey, Adela
+                    👋 Hey, {userName || "User"}
                   </p>{" "}
                 </div>
               </div>
@@ -208,12 +221,17 @@ const Navbar = (props) => {
                 >
                   Newsletter Settings
                 </a>
-                <a
-                  href=" "
-                  className="mt-3 text-sm font-medium text-red-500 hover:text-red-500 transition duration-150 ease-out hover:ease-in"
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("access");
+                    localStorage.removeItem("refresh");
+                    localStorage.removeItem("workspace_id");
+                    window.location.href = "/auth/sign-in";
+                  }}
+                  className="mt-3 text-sm font-medium text-red-500 hover:text-red-500 transition duration-150 ease-out hover:ease-in text-left"
                 >
                   Log Out
-                </a>
+                </button>
               </div>
             </div>
           }

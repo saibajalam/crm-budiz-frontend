@@ -1,12 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
 import Card from "components/card";
 import BarChart from "components/charts/BarChart";
-import {
-  barChartDataWeeklyRevenue,
-  barChartOptionsWeeklyRevenue,
-} from "variables/charts";
 import { MdBarChart } from "react-icons/md";
+import { dashboardService } from "api/services/dashboard.service";
 
 const WeeklyRevenue = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard", "weeklyRevenue"],
+    queryFn: dashboardService.getWeeklyRevenue,
+  });
+
+  const chartData = data?.chart_data || [{ name: "Revenue", data: [] }];
+  const chartOptions = data?.chart_options || {
+    chart: { toolbar: { show: false } },
+    tooltip: { theme: "dark" },
+    xaxis: { categories: [] },
+    plotOptions: { bar: { borderRadius: 10, columnWidth: "40px" } },
+    colors: ["#6AD2FF", "#4318FF", "#EFF4FB"],
+  };
+
   return (
     <Card extra="flex flex-col bg-white w-full rounded-3xl py-6 px-2 text-center">
       <div className="mb-auto flex items-center justify-between px-6">
@@ -20,10 +32,13 @@ const WeeklyRevenue = () => {
 
       <div className="md:mt-16 lg:mt-0">
         <div className="h-[250px] w-full xl:h-[350px]">
-          <BarChart
-            chartData={barChartDataWeeklyRevenue}
-            chartOptions={barChartOptionsWeeklyRevenue}
-          />
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+            </div>
+          ) : (
+            <BarChart chartData={chartData} chartOptions={chartOptions} />
+          )}
         </div>
       </div>
     </Card>

@@ -9,6 +9,7 @@ import RTLDefault from "views/rtl/default";
 
 // Auth Imports
 import SignIn from "views/auth/SignIn";
+import Login from "modules/auth/Login";
 
 // Icon Imports
 import {

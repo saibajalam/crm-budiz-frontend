@@ -1,8 +1,40 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import InputField from "components/fields/InputField";
 import { FcGoogle } from "react-icons/fc";
 import Checkbox from "components/checkbox";
+import { authService } from "api/services/auth.service";
+import toast from "react-hot-toast";
 
 export default function SignIn() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const loginMutation = useMutation({
+    mutationFn: (credentials) => authService.login(credentials),
+    onSuccess: (data) => {
+      authService.storeTokens(data);
+      toast.success("Logged in successfully");
+      navigate("/admin/default");
+    },
+    onError: (err) => {
+      const message =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+      setError(message);
+    },
+  });
+
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    setError("");
+    loginMutation.mutate({ email, password });
+  };
+
   return (
     <div className="mt-16 mb-16 flex h-full w-full items-center justify-center px-2 md:mx-0 md:px-0 lg:mb-10 lg:items-center lg:justify-start">
       {/* Sign in section */}
@@ -26,43 +58,60 @@ export default function SignIn() {
           <p className="text-base text-gray-600 dark:text-white"> or </p>
           <div className="h-px w-full bg-gray-200 dark:bg-navy-700" />
         </div>
-        {/* Email */}
-        <InputField
-          variant="auth"
-          extra="mb-3"
-          label="Email*"
-          placeholder="mail@simmmple.com"
-          id="email"
-          type="text"
-        />
 
-        {/* Password */}
-        <InputField
-          variant="auth"
-          extra="mb-3"
-          label="Password*"
-          placeholder="Min. 8 characters"
-          id="password"
-          type="password"
-        />
-        {/* Checkbox */}
-        <div className="mb-4 flex items-center justify-between px-2">
-          <div className="flex items-center">
-            <Checkbox />
-            <p className="ml-2 text-sm font-medium text-navy-700 dark:text-white">
-              Keep me logged In
-            </p>
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            {error}
           </div>
-          <a
-            className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-white"
-            href=" "
+        )}
+
+        <form onSubmit={handleSignIn}>
+          {/* Email */}
+          <InputField
+            variant="auth"
+            extra="mb-3"
+            label="Email*"
+            placeholder="mail@simmmple.com"
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          {/* Password */}
+          <InputField
+            variant="auth"
+            extra="mb-3"
+            label="Password*"
+            placeholder="Min. 8 characters"
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {/* Checkbox */}
+          <div className="mb-4 flex items-center justify-between px-2">
+            <div className="flex items-center">
+              <Checkbox />
+              <p className="ml-2 text-sm font-medium text-navy-700 dark:text-white">
+                Keep me logged In
+              </p>
+            </div>
+            <a
+              className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-white"
+              href=" "
+            >
+              Forgot Password?
+            </a>
+          </div>
+          <button
+            type="submit"
+            disabled={loginMutation.isPending}
+            className="linear mt-2 w-full rounded-xl bg-brand-500 py-[12px] text-base font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:text-white dark:hover:bg-brand-300 dark:active:bg-brand-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Forgot Password?
-          </a>
-        </div>
-        <button className="linear mt-2 w-full rounded-xl bg-brand-500 py-[12px] text-base font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:text-white dark:hover:bg-brand-300 dark:active:bg-brand-200">
-          Sign In
-        </button>
+            {loginMutation.isPending ? "Signing In..." : "Sign In"}
+          </button>
+        </form>
         <div className="mt-4">
           <span className=" text-sm font-medium text-navy-700 dark:text-gray-600">
             Not registered yet?

@@ -1,8 +1,32 @@
+import { useQuery } from "@tanstack/react-query";
 import PieChart from "components/charts/PieChart";
-import { pieChartData, pieChartOptions } from "variables/charts";
 import Card from "components/card";
+import { dashboardService } from "api/services/dashboard.service";
 
 const PieChartCard = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard", "pieChart"],
+    queryFn: dashboardService.getPieChartData,
+  });
+
+  const series = data?.series || [];
+  const options = data?.options || {
+    labels: ["Your Files", "System"],
+    colors: ["#4318FF", "#6AD2FF"],
+    chart: { width: "50px" },
+    states: { hover: { filter: { type: "none" } } },
+    legend: { show: false },
+    dataLabels: { enabled: false },
+    plotOptions: { donut: { expandOnClick: false } },
+    fill: { colors: ["#4318FF", "#6AD2FF"] },
+    tooltip: { enabled: true, theme: "dark" },
+  };
+
+  const categories = data?.categories || [
+    { label: "Your Files", color: "bg-brand-500", value: "—" },
+    { label: "System", color: "bg-[#6AD2FF]", value: "—" },
+  ];
+
   return (
     <Card extra="rounded-[20px] p-3">
       <div className="flex flex-row justify-between px-3 pt-2">
@@ -22,30 +46,24 @@ const PieChartCard = () => {
       </div>
 
       <div className="mb-auto flex h-[220px] w-full items-center justify-center">
-        <PieChart options={pieChartOptions} series={pieChartData} />
+        {isLoading ? (
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+        ) : (
+          <PieChart options={options} series={series} />
+        )}
       </div>
       <div className="flex flex-row !justify-between rounded-2xl px-6 py-3 shadow-2xl shadow-shadow-500 dark:!bg-navy-700 dark:shadow-none">
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-brand-500" />
-            <p className="text-sm font-normal text-gray-600 ms-1">Your Files</p>
+        {categories.map((cat, idx) => (
+          <div key={idx} className="flex flex-col items-center justify-center">
+            <div className="flex items-center justify-center">
+              <div className={`h-2 w-2 rounded-full ${cat.color}`} />
+              <p className="text-sm font-normal text-gray-600 ms-1">{cat.label}</p>
+            </div>
+            <p className="mt-px text-xl font-bold text-navy-700 dark:text-white">
+              {cat.value}
+            </p>
           </div>
-          <p className="mt-px text-xl font-bold text-navy-700  dark:text-white">
-            63%
-          </p>
-        </div>
-
-        <div className="h-11 w-px bg-gray-300 dark:bg-white/10" />
-
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-[#6AD2FF]" />
-            <p className="text-sm font-normal text-gray-600 ms-1">System</p>
-          </div>
-          <p className="mt-px text-xl font-bold text-navy-700 dark:text-white">
-            25%
-          </p>
-        </div>
+        ))}
       </div>
     </Card>
   );

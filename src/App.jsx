@@ -1,17 +1,32 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 import RtlLayout from "layouts/rtl";
 import AdminLayout from "layouts/admin";
 import AuthLayout from "layouts/auth";
+
 const App = () => {
   return (
-    <Routes>
-      <Route path="auth/*" element={<AuthLayout />} />
-      <Route path="admin/*" element={<AdminLayout />} />
-      <Route path="rtl/*" element={<RtlLayout />} />
-      <Route path="/" element={<Navigate to="/admin" replace />} />
-    </Routes>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        }}
+      />
+      <Routes>
+        <Route path="auth/*" element={<AuthLayout />} />
+        <Route path="admin/*" element={<AdminLayout />} />
+        <Route path="rtl/*" element={<RtlLayout />} />
+        <Route path="/" element={<Navigate to="/admin" replace />} />
+      </Routes>
+    </>
   );
 };
 

@@ -1,20 +1,37 @@
+import { useQuery } from "@tanstack/react-query";
 import Banner from "./components/Banner";
-import NFt2 from "assets/img/nfts/Nft2.png";
-import NFt4 from "assets/img/nfts/Nft4.png";
-import NFt3 from "assets/img/nfts/Nft3.png";
-import NFt5 from "assets/img/nfts/Nft5.png";
-import NFt6 from "assets/img/nfts/Nft6.png";
-import avatar1 from "assets/img/avatars/avatar1.png";
-import avatar2 from "assets/img/avatars/avatar2.png";
-import avatar3 from "assets/img/avatars/avatar3.png";
-
-import tableDataTopCreators from "views/admin/marketplace/variables/tableDataTopCreators.json";
-import { tableColumnsTopCreators } from "views/admin/marketplace/variables/tableColumnsTopCreators";
 import HistoryCard from "./components/HistoryCard";
 import TopCreatorTable from "./components/TableTopCreators";
 import NftCard from "components/card/NftCard";
+import { marketplaceService } from "api/services/marketplace.service";
 
 const Marketplace = () => {
+  const { data: trendingRaw, isLoading } = useQuery({
+    queryKey: ["marketplace", "trending"],
+    queryFn: marketplaceService.getTrending,
+  });
+  const { data: recentRaw } = useQuery({
+    queryKey: ["marketplace", "recent"],
+    queryFn: marketplaceService.getRecent,
+  });
+  const { data: creatorsRaw } = useQuery({
+    queryKey: ["marketplace", "topCreators"],
+    queryFn: marketplaceService.getTopCreators,
+  });
+
+  const normalize = (d) => (Array.isArray(d) ? d : d?.data || []);
+  const trending = normalize(trendingRaw);
+  const recent = normalize(recentRaw);
+  const topCreators = normalize(creatorsRaw);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center pt-20">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="mt-3 grid h-full grid-cols-1 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="col-span-1 h-fit w-full xl:col-span-1 2xl:col-span-2">
@@ -28,66 +45,39 @@ const Marketplace = () => {
           </h4>
           <ul className="mt-4 flex items-center justify-between md:mt-0 md:justify-center md:!gap-5 2xl:!gap-12">
             <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Art
-              </a>
+              <a className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white" href=" ">Art</a>
             </li>
             <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Music
-              </a>
+              <a className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white" href=" ">Music</a>
             </li>
             <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Collection
-              </a>
+              <a className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white" href=" ">Collection</a>
             </li>
             <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                <a href=" ">Sports</a>
-              </a>
+              <a className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white" href=" ">Sports</a>
             </li>
           </ul>
         </div>
 
         {/* NFTs trending card */}
         <div className="z-20 grid grid-cols-1 gap-5 md:grid-cols-3">
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Abstract Colors"
-            author="Esthera Jackson"
-            price="0.91"
-            image={NFt3}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="ETH AI Brain"
-            author="Nick Wilson"
-            price="0.7"
-            image={NFt2}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Mesh Gradients"
-            author="Will Smith"
-            price="2.91"
-            image={NFt4}
-          />
+          {trending.length === 0 ? (
+            <p className="col-span-3 py-8 text-center text-gray-500">No trending items</p>
+          ) : (
+            trending.map((item, idx) => (
+              <NftCard
+                key={item.id || idx}
+                bidders={item.bidders || []}
+                title={item.title}
+                author={item.author}
+                price={item.price}
+                image={item.image}
+              />
+            ))
+          )}
         </div>
 
-        {/* Recenlty Added setion */}
+        {/* Recently Added section */}
         <div className="mb-5 mt-5 flex items-center justify-between px-[26px]">
           <h4 className="text-2xl font-bold text-navy-700 dark:text-white">
             Recently Added
@@ -96,38 +86,26 @@ const Marketplace = () => {
 
         {/* Recently Add NFTs */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Abstract Colors"
-            author="Esthera Jackson"
-            price="0.91"
-            image={NFt4}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="ETH AI Brain"
-            author="Nick Wilson"
-            price="0.7"
-            image={NFt5}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Mesh Gradients"
-            author="Will Smith"
-            price="2.91"
-            image={NFt6}
-          />
+          {recent.length === 0 ? (
+            <p className="col-span-3 py-8 text-center text-gray-500">No recent items</p>
+          ) : (
+            recent.map((item, idx) => (
+              <NftCard
+                key={item.id || idx}
+                bidders={item.bidders || []}
+                title={item.title}
+                author={item.author}
+                price={item.price}
+                image={item.image}
+              />
+            ))
+          )}
         </div>
       </div>
 
       {/* right side section */}
-
       <div className="col-span-1 h-full w-full rounded-xl 2xl:col-span-1">
-        <TopCreatorTable
-          extra="mb-5"
-          tableData={tableDataTopCreators}
-          columnsData={tableColumnsTopCreators}
-        />
+        <TopCreatorTable extra="mb-5" tableData={topCreators} />
         <HistoryCard />
       </div>
     </div>

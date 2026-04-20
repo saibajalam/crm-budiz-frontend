@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import MiniCalendar from "components/calendar/MiniCalendar";
 import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
 import TotalSpent from "views/admin/default/components/TotalSpent";
@@ -6,17 +7,38 @@ import { IoMdHome } from "react-icons/io";
 import { IoDocuments } from "react-icons/io5";
 import { MdBarChart, MdDashboard } from "react-icons/md";
 
-import { columnsDataCheck, columnsDataComplex } from "./variables/columnsData";
-
 import Widget from "views/rtl/default/components/Widget";
 import CheckTable from "views/rtl/default/components/CheckTable";
 import ComplexTable from "views/rtl/default/components/ComplexTable";
 import DailyTraffic from "views/rtl/default/components/DailyTraffic";
 import TaskCard from "views/rtl/default/components/TaskCard";
-import tableDataCheck from "./variables/tableDataCheck.json";
-import tableDataComplex from "./variables/tableDataComplex.json";
+import { dashboardService } from "api/services/dashboard.service";
 
 const Dashboard = () => {
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["dashboard", "stats"],
+    queryFn: dashboardService.getStats,
+  });
+  const { data: checkRaw } = useQuery({
+    queryKey: ["dashboard", "checkTable"],
+    queryFn: dashboardService.getCheckTableData,
+  });
+  const { data: complexRaw } = useQuery({
+    queryKey: ["dashboard", "complexTable"],
+    queryFn: dashboardService.getComplexTableData,
+  });
+
+  const checkTableData = Array.isArray(checkRaw) ? checkRaw : checkRaw?.data || [];
+  const complexTableData = Array.isArray(complexRaw) ? complexRaw : complexRaw?.data || [];
+
+  if (statsLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center pt-20">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Card widget */}
@@ -25,32 +47,32 @@ const Dashboard = () => {
         <Widget
           icon={<MdBarChart className="h-7 w-7" />}
           title={"Earnings"}
-          subtitle={"$340.5"}
+          subtitle={stats?.earnings ?? "—"}
         />
         <Widget
           icon={<IoDocuments className="h-6 w-6" />}
           title={"Spend this month"}
-          subtitle={"$642.39"}
+          subtitle={stats?.spend_this_month ?? "—"}
         />
         <Widget
           icon={<MdBarChart className="h-7 w-7" />}
           title={"Sales"}
-          subtitle={"$574.34"}
+          subtitle={stats?.sales ?? "—"}
         />
         <Widget
           icon={<MdDashboard className="h-6 w-6" />}
           title={"Your Balance"}
-          subtitle={"$1,000"}
+          subtitle={stats?.balance ?? "—"}
         />
         <Widget
           icon={<MdBarChart className="h-7 w-7" />}
           title={"New Tasks"}
-          subtitle={"145"}
+          subtitle={stats?.new_tasks ?? "—"}
         />
         <Widget
           icon={<IoMdHome className="h-6 w-6" />}
           title={"Total Projects"}
-          subtitle={"$2433"}
+          subtitle={stats?.total_projects ?? "—"}
         />
       </div>
 
@@ -66,10 +88,7 @@ const Dashboard = () => {
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
         {/* Check Table */}
         <div>
-          <CheckTable
-            columnsData={columnsDataCheck}
-            tableData={tableDataCheck}
-          />
+          <CheckTable tableData={checkTableData} />
         </div>
 
         {/* Traffic chart & Pie Chart */}
@@ -81,10 +100,7 @@ const Dashboard = () => {
 
         {/* Complex Table , Task & Calendar */}
 
-        <ComplexTable
-          columnsData={columnsDataComplex}
-          tableData={tableDataComplex}
-        />
+        <ComplexTable tableData={complexTableData} />
 
         {/* Task chart & Calendar */}
 
