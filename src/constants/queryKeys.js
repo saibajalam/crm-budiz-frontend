@@ -1,0 +1,26 @@
+export const QUERY_KEYS = {
+  LEADS: "leads",
+  DEALS: "deals",
+  DEAL: "deal",
+  DEAL_ACTIVITIES: "deal-activities",
+  DEAL_CONTACTS: "deal-contacts",
+  CONTACTS: "contacts",
+  ACTIVITIES: "activities",
+  PROFILE: "profile",
+  NOTIFICATIONS: "notifications",
+  PIPELINES: "pipelines",
+  PIPELINE_STAGES: "pipelineStages",
+  SEARCH: "search",
+  GRAPH: "graph",
+  ENTITY_GRAPH: "entity-graph",
+  LEAD_SCORES: "lead-scores",
+  CONTACT_SCORE: "contact-score",
+  ANALYTICS: "analytics",
+  AI_READY: "ai-ready",
+  AI_CHAT: "ai-chat",
+  AI_CONTEXT: "ai-context",
+  AI_SUMMARY: "ai-summary",
+  AI_INSIGHTS: "ai-insights",
+  AI_MEMORY: "ai-memory", // Added for AI memory caching
+  AI_PROMPT_TEMPLATES: "ai-prompt-templates", // Added for prompt template registry caching
+};

@@ -1,5 +1,4 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   MdArrowDropUp,
   MdOutlineCalendarToday,
@@ -7,13 +6,10 @@ import {
 } from "react-icons/md";
 import Card from "components/card";
 import LineChart from "components/charts/LineChart";
-import { dashboardService } from "api/services/dashboard.service";
+import { useTotalSpent } from "domains/dashboard/hooks";
 
 const TotalSpent = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dashboard", "totalSpent"],
-    queryFn: dashboardService.getTotalSpent,
-  });
+  const { data, isLoading } = useTotalSpent();
 
   const series = data?.series || [{ name: "Revenue", data: [] }];
   const options = data?.options || {

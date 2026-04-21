@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import MiniCalendar from "components/calendar/MiniCalendar";
 import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
 import TotalSpent from "views/admin/default/components/TotalSpent";
@@ -12,23 +11,21 @@ import CheckTable from "views/admin/default/components/CheckTable";
 import ComplexTable from "views/admin/default/components/ComplexTable";
 import DailyTraffic from "views/admin/default/components/DailyTraffic";
 import TaskCard from "views/admin/default/components/TaskCard";
-import { dashboardService } from "api/services/dashboard.service";
+import {
+  useDashboardCheckTable,
+  useDashboardComplexTable,
+  useDashboardStats,
+} from "domains/dashboard/hooks";
 
 const Dashboard = () => {
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
-    queryKey: ["dashboard", "stats"],
-    queryFn: dashboardService.getStats,
-  });
-
-  const { data: checkData } = useQuery({
-    queryKey: ["dashboard", "checkTable"],
-    queryFn: dashboardService.getCheckTableData,
-  });
-
-  const { data: complexData } = useQuery({
-    queryKey: ["dashboard", "complexTable"],
-    queryFn: dashboardService.getComplexTableData,
-  });
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useDashboardStats();
+  const { data: checkData } = useDashboardCheckTable();
+  const { data: complexData } = useDashboardComplexTable();
 
   const checkTableData = Array.isArray(checkData) ? checkData : checkData?.data || [];
   const complexTableData = Array.isArray(complexData) ? complexData : complexData?.data || [];
@@ -46,7 +43,7 @@ const Dashboard = () => {
       <div className="mt-10 flex flex-col items-center justify-center">
         <p className="text-lg text-red-500">{statsError.message || "Failed to load dashboard data"}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => refetchStats()}
           className="mt-4 rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600"
         >
           Retry

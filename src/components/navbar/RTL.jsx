@@ -1,5 +1,4 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import Dropdown from "components/dropdown";
 import { FiAlignJustify } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -11,22 +10,20 @@ import {
   IoMdNotificationsOutline,
   IoMdInformationCircleOutline,
 } from "react-icons/io";
-import { notificationsService } from "api/services/notifications.service";
-import { profileService } from "api/services/profile.service";
+import { useNotifications } from "domains/notifications/hooks";
+import { useProfile } from "domains/profile/hooks";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: notificationsService.getAll,
-  });
+  const { data: notificationsData } = useNotifications();
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: profileService.get,
-  });
+  const { data: profile } = useProfile();
+
+  const notifications = Array.isArray(notificationsData)
+    ? notificationsData
+    : notificationsData?.results || [];
 
   const userName = profile?.name || profile?.first_name || "User";
   const avatarUrl = profile?.avatar || null;

@@ -1,13 +1,9 @@
 import Card from "components/card";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { profileService } from "api/services/profile.service";
+import { useProfile } from "domains/profile/hooks";
 
 const General = () => {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: profileService.get,
-  });
+  const { data: profile, isLoading } = useProfile();
 
   const fields = [
     { label: "Education", key: "education" },

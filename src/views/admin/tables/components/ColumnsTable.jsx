@@ -1,6 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import CardMenu from "components/card/CardMenu";
 import Card from "components/card";
+import LeadScoreBadge from "components/contacts/LeadScoreBadge";
+import { useLeadScores } from "domains/scoring/hooks";
 
 import {
   createColumnHelper,
@@ -12,8 +15,34 @@ import {
 
 function ColumnsTable(props) {
   const { tableData } = props;
+  const { data: leadScoresData } = useLeadScores();
   const [sorting, setSorting] = React.useState([]);
-  let defaultData = tableData;
+
+  const scoreByContactId = React.useMemo(() => {
+    const map = new Map();
+    (Array.isArray(leadScoresData) ? leadScoresData : []).forEach((entry) => {
+      map.set(String(entry.contactId), entry);
+    });
+    return map;
+  }, [leadScoresData]);
+
+  const normalizedRows = React.useMemo(
+    () =>
+      (Array.isArray(tableData) ? tableData : []).map((contact) => {
+        const scoreData = scoreByContactId.get(String(contact.id)) || { score: 0, level: "low" };
+        return {
+          id: contact.id,
+          name: contact.name || contact.email || `Contact ${contact.id}`,
+          email: contact.email || "-",
+          company: contact.company || contact.organization || "-",
+          updatedAt: contact.updated_at || contact.created_at || null,
+          score: scoreData.score || 0,
+          scoreLevel: scoreData.level || "low",
+        };
+      }),
+    [scoreByContactId, tableData]
+  );
+
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -21,50 +50,60 @@ function ColumnsTable(props) {
         <p className="text-sm font-bold text-gray-600 dark:text-white">NAME</p>
       ),
       cell: (info) => (
-        <p className="text-sm font-bold text-navy-700 dark:text-white">
-          {info.getValue()}
-        </p>
+        <div>
+          <Link
+            to={`/admin/contacts/${info.row.original.id}`}
+            className="text-sm font-bold text-brand-500 hover:underline"
+          >
+            {info.getValue()}
+          </Link>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{info.row.original.email}</p>
+        </div>
       ),
     }),
-    columnHelper.accessor("progress", {
-      id: "progress",
+    columnHelper.accessor("company", {
+      id: "company",
       header: () => (
         <p className="text-sm font-bold text-gray-600 dark:text-white">
-          PROGRESS
+          COMPANY
         </p>
       ),
       cell: (info) => (
-        <p className="text-sm font-bold text-navy-700 dark:text-white">
+        <p className="text-sm font-semibold text-navy-700 dark:text-white">
           {info.getValue()}
         </p>
       ),
     }),
-    columnHelper.accessor("quantity", {
-      id: "quantity",
+    columnHelper.accessor("score", {
+      id: "score",
       header: () => (
         <p className="text-sm font-bold text-gray-600 dark:text-white">
-          QUANTITY
+          LEAD SCORE
         </p>
       ),
       cell: (info) => (
-        <p className="text-sm font-bold text-navy-700 dark:text-white">
-          {info.getValue()}
-        </p>
+        <LeadScoreBadge score={info.getValue()} level={info.row.original.scoreLevel} />
       ),
     }),
-    columnHelper.accessor("date", {
-      id: "date",
+    columnHelper.accessor("updatedAt", {
+      id: "updatedAt",
       header: () => (
-        <p className="text-sm font-bold text-gray-600 dark:text-white">DATE</p>
+        <p className="text-sm font-bold text-gray-600 dark:text-white">UPDATED</p>
       ),
       cell: (info) => (
-        <p className="text-sm font-bold text-navy-700 dark:text-white">
-          {info.getValue()}
+        <p className="text-sm font-semibold text-navy-700 dark:text-white">
+          {info.getValue() ? new Date(info.getValue()).toLocaleDateString() : "-"}
         </p>
       ),
     }),
   ]; // eslint-disable-next-line
-  const [data, setData] = React.useState(() => [...defaultData]);
+
+  const [data, setData] = React.useState(() => [...normalizedRows]);
+
+  React.useEffect(() => {
+    setData([...normalizedRows]);
+  }, [normalizedRows]);
+
   const table = useReactTable({
     data,
     columns,
@@ -80,7 +119,7 @@ function ColumnsTable(props) {
     <Card extra={"w-full pb-10 p-4 h-full"}>
       <header className="relative flex items-center justify-between">
         <div className="text-xl font-bold text-navy-700 dark:text-white">
-          4-Columns Table
+          Contacts Intelligence
         </div>
         <CardMenu />
       </header>

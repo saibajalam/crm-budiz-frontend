@@ -1,14 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import BarChart from "components/charts/BarChart";
 import { MdArrowDropUp } from "react-icons/md";
 import Card from "components/card";
-import { dashboardService } from "api/services/dashboard.service";
+import { useDailyTraffic } from "domains/dashboard/hooks";
 
 const DailyTraffic = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dashboard", "dailyTraffic"],
-    queryFn: dashboardService.getDailyTraffic,
-  });
+  const { data, isLoading } = useDailyTraffic();
 
   const chartData = data?.chart_data || [{ name: "Daily Traffic", data: [] }];
   const chartOptions = data?.chart_options || {

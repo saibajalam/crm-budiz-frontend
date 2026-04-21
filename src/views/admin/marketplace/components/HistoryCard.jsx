@@ -1,14 +1,10 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { FaEthereum } from "react-icons/fa";
 import Card from "components/card";
-import { marketplaceService } from "api/services/marketplace.service";
+import { useMarketplaceHistory } from "domains/marketplace/hooks";
 
 const HistoryCard = () => {
-  const { data: rawData, isLoading } = useQuery({
-    queryKey: ["marketplace", "history"],
-    queryFn: marketplaceService.getHistory,
-  });
+  const { data: rawData, isLoading } = useMarketplaceHistory();
 
   const historyData = Array.isArray(rawData) ? rawData : rawData?.data || [];
 

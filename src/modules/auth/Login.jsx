@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { authService } from "api/services/auth.service";
+import { useAuthActions, useLogin } from "domains/auth/hooks";
 import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const { storeTokens } = useAuthActions();
 
-  const loginMutation = useMutation({
-    mutationFn: (credentials) => authService.login(credentials),
+  const loginMutation = useLogin({
     onSuccess: (data) => {
-      authService.storeTokens(data);
+      storeTokens(data);
       toast.success("Logged in successfully");
       navigate("/admin/default");
     },

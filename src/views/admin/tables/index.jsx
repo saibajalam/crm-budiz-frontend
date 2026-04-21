@@ -1,30 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
 import CheckTable from "./components/CheckTable";
 import DevelopmentTable from "./components/DevelopmentTable";
 import ColumnsTable from "./components/ColumnsTable";
 import ComplexTable from "./components/ComplexTable";
-import { leadsService } from "api/services/leads.service";
-import { dealsService } from "api/services/deals.service";
-import { contactsService } from "api/services/contacts.service";
-import { activitiesService } from "api/services/activities.service";
+import { useLeads } from "domains/leads/hooks";
+import { useDeals } from "domains/deals/hooks";
+import { useContacts } from "domains/contacts/hooks";
+import { useActivities } from "domains/activities/hooks";
 
 const Tables = () => {
-  const { data: leadsRaw, isLoading: leadsLoading } = useQuery({
-    queryKey: ["leads"],
-    queryFn: () => leadsService.getAll(),
-  });
-  const { data: dealsRaw } = useQuery({
-    queryKey: ["deals"],
-    queryFn: () => dealsService.getAll(),
-  });
-  const { data: contactsRaw } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => contactsService.getAll(),
-  });
-  const { data: activitiesRaw } = useQuery({
-    queryKey: ["activities"],
-    queryFn: () => activitiesService.getAll(),
-  });
+  const { data: leadsRaw, isLoading: leadsLoading } = useLeads();
+  const { data: dealsRaw } = useDeals();
+  const { data: contactsRaw } = useContacts();
+  const { data: activitiesRaw } = useActivities();
 
   const normalize = (d) => (Array.isArray(d) ? d : d?.results || d?.data || []);
   const leadsData = normalize(leadsRaw);

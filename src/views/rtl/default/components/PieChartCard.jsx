@@ -1,13 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import PieChart from "components/charts/PieChart";
 import Card from "components/card";
-import { dashboardService } from "api/services/dashboard.service";
+import { usePieChartData } from "domains/dashboard/hooks";
 
 const PieChartCard = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dashboard", "pieChart"],
-    queryFn: dashboardService.getPieChartData,
-  });
+  const { data, isLoading } = usePieChartData();
 
   const series = data?.series || [];
   const options = data?.options || {

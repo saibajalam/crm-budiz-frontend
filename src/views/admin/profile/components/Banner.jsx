@@ -1,14 +1,10 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import banner from "assets/img/profile/banner.png";
 import Card from "components/card";
-import { profileService } from "api/services/profile.service";
+import { useProfile } from "domains/profile/hooks";
 
 const Banner = () => {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: profileService.get,
-  });
+  const { data: profile, isLoading } = useProfile();
 
   return (
     <Card extra={"items-center w-full h-full p-[16px] bg-cover"}>

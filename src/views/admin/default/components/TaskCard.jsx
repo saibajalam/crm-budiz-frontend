@@ -1,16 +1,12 @@
 import CardMenu from "components/card/CardMenu";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import Checkbox from "components/checkbox";
 import { MdDragIndicator, MdCheckCircle } from "react-icons/md";
 import Card from "components/card";
-import { dashboardService } from "api/services/dashboard.service";
+import { useDashboardTasks } from "domains/dashboard/hooks";
 
 const TaskCard = () => {
-  const { data: tasksData, isLoading } = useQuery({
-    queryKey: ["dashboard", "tasks"],
-    queryFn: dashboardService.getTasks,
-  });
+  const { data: tasksData, isLoading } = useDashboardTasks();
 
   const tasks = Array.isArray(tasksData) ? tasksData : tasksData?.data || [];
 

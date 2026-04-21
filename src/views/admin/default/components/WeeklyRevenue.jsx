@@ -1,14 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import Card from "components/card";
 import BarChart from "components/charts/BarChart";
 import { MdBarChart } from "react-icons/md";
-import { dashboardService } from "api/services/dashboard.service";
+import { useWeeklyRevenue } from "domains/dashboard/hooks";
 
 const WeeklyRevenue = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dashboard", "weeklyRevenue"],
-    queryFn: dashboardService.getWeeklyRevenue,
-  });
+  const { data, isLoading } = useWeeklyRevenue();
 
   const chartData = data?.chart_data || [{ name: "Revenue", data: [] }];
   const chartOptions = data?.chart_options || {

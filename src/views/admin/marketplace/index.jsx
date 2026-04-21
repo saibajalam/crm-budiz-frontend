@@ -1,23 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
 import Banner from "./components/Banner";
 import HistoryCard from "./components/HistoryCard";
 import TopCreatorTable from "./components/TableTopCreators";
 import NftCard from "components/card/NftCard";
-import { marketplaceService } from "api/services/marketplace.service";
+import {
+  useMarketplaceRecent,
+  useMarketplaceTopCreators,
+  useMarketplaceTrending,
+} from "domains/marketplace/hooks";
 
 const Marketplace = () => {
-  const { data: trendingRaw, isLoading } = useQuery({
-    queryKey: ["marketplace", "trending"],
-    queryFn: marketplaceService.getTrending,
-  });
-  const { data: recentRaw } = useQuery({
-    queryKey: ["marketplace", "recent"],
-    queryFn: marketplaceService.getRecent,
-  });
-  const { data: creatorsRaw } = useQuery({
-    queryKey: ["marketplace", "topCreators"],
-    queryFn: marketplaceService.getTopCreators,
-  });
+  const { data: trendingRaw, isLoading } = useMarketplaceTrending();
+  const { data: recentRaw } = useMarketplaceRecent();
+  const { data: creatorsRaw } = useMarketplaceTopCreators();
 
   const normalize = (d) => (Array.isArray(d) ? d : d?.data || []);
   const trending = normalize(trendingRaw);

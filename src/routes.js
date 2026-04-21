@@ -6,6 +6,11 @@ import NFTMarketplace from "views/admin/marketplace";
 import Profile from "views/admin/profile";
 import DataTables from "views/admin/tables";
 import RTLDefault from "views/rtl/default";
+import KanbanBoard from "pages/deals/KanbanBoard";
+import DealDetailPage from "pages/deals/DealDetailPage";
+import EntityGraphView from "pages/graph/EntityGraphView";
+import AnalyticsDashboard from "pages/analytics/AnalyticsDashboard";
+import ContactDetailPage from "pages/contacts/ContactDetailPage";
 
 // Auth Imports
 import SignIn from "views/auth/SignIn";
@@ -18,6 +23,9 @@ import {
   MdBarChart,
   MdPerson,
   MdLock,
+  MdViewKanban,
+  MdInsights,
+  MdShare,
 } from "react-icons/md";
 
 const routes = [
@@ -42,6 +50,41 @@ const routes = [
     icon: <MdBarChart className="h-6 w-6" />,
     path: "data-tables",
     component: <DataTables />,
+  },
+  {
+    name: "Deals Pipeline",
+    layout: "/admin",
+    icon: <MdViewKanban className="h-6 w-6" />,
+    path: "deals-pipeline",
+    component: <KanbanBoard />,
+  },
+  {
+    name: "Relationship Graph",
+    layout: "/admin",
+    icon: <MdShare className="h-6 w-6" />,
+    path: "graph",
+    component: <EntityGraphView />,
+  },
+  {
+    name: "Analytics",
+    layout: "/admin",
+    icon: <MdInsights className="h-6 w-6" />,
+    path: "analytics",
+    component: <AnalyticsDashboard />,
+  },
+  {
+    name: "Deal Detail",
+    layout: "/admin",
+    path: "deals/:id",
+    component: <DealDetailPage />,
+    hidden: true,
+  },
+  {
+    name: "Contact Detail",
+    layout: "/admin",
+    path: "contacts/:id",
+    component: <ContactDetailPage />,
+    hidden: true,
   },
   {
     name: "Profile",

@@ -1,8 +1,7 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import Dropdown from "components/dropdown";
 import { FiAlignJustify } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import navbarimage from "assets/img/layout/Navbar.png";
 import { BsArrowBarUp } from "react-icons/bs";
 import { FiSearch } from "react-icons/fi";
@@ -11,25 +10,91 @@ import {
   IoMdNotificationsOutline,
   IoMdInformationCircleOutline,
 } from "react-icons/io";
-import { notificationsService } from "api/services/notifications.service";
-import { profileService } from "api/services/profile.service";
+import { useNotifications } from "domains/notifications/hooks";
+import { useProfile } from "domains/profile/hooks";
+import { useDebouncedSearchValue, useSearchAll } from "domains/search/hooks";
+
+const normalizeSearchData = (rawData) => {
+  if (!rawData) return { deals: [], contacts: [], activities: [] };
+  return {
+    deals: rawData.deals || rawData.deal_results || [],
+    contacts: rawData.contacts || rawData.contact_results || [],
+    activities: rawData.activities || rawData.activity_results || [],
+  };
+};
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
+  const navigate = useNavigate();
   const [darkmode, setDarkmode] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: notificationsService.getAll,
+  const searchRef = React.useRef(null);
+  const debouncedQuery = useDebouncedSearchValue(searchTerm, 300);
+  const { data: searchData, isFetching: searchLoading } = useSearchAll(debouncedQuery, {
+    enabled: debouncedQuery.length > 1,
   });
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: profileService.get,
-  });
+  const { data: notificationsData } = useNotifications();
+
+  const { data: profile } = useProfile();
+
+  const notifications = Array.isArray(notificationsData)
+    ? notificationsData
+    : notificationsData?.results || [];
 
   const userName = profile?.name || profile?.first_name || "User";
   const avatarUrl = profile?.avatar || null;
+  const groupedResults = normalizeSearchData(searchData);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!searchRef.current || searchRef.current.contains(event.target)) return;
+      setSearchOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const hasResults =
+    groupedResults.deals.length > 0 ||
+    groupedResults.contacts.length > 0 ||
+    groupedResults.activities.length > 0;
+
+  const renderResultButton = (item, type, idx) => {
+    const key = `${type}-${item.id || idx}`;
+    const label = item.name || item.title || item.note || item.message || `${type} #${item.id}`;
+    const subtitle = item.email || item.stage_name || item.type || "";
+
+    const handleOpen = () => {
+      setSearchOpen(false);
+      if (type === "deals") {
+        navigate(`/admin/deals/${item.id}`);
+        return;
+      }
+      if (type === "contacts") {
+        navigate("/admin/tables");
+        return;
+      }
+      if (type === "activities") {
+        navigate(item.deal_id ? `/admin/deals/${item.deal_id}` : "/admin/deals-pipeline");
+      }
+    };
+
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={handleOpen}
+        className="w-full rounded-lg px-3 py-2 text-left text-sm transition hover:bg-gray-100 dark:hover:bg-white/5"
+      >
+        <p className="font-semibold text-navy-700 dark:text-white">{label}</p>
+        {subtitle ? <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p> : null}
+      </button>
+    );
+  };
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -62,16 +127,66 @@ const Navbar = (props) => {
         </p>
       </div>
 
-      <div className="relative mt-[3px] flex h-[61px] w-[355px] flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-2 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none md:w-[365px] md:flex-grow-0 md:gap-1 xl:w-[365px] xl:gap-2">
-        <div className="flex h-full items-center rounded-full bg-lightPrimary text-navy-700 dark:bg-navy-900 dark:text-white xl:w-[225px]">
+      <div className="relative mt-[3px] flex h-[61px] w-[355px] flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-2 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none md:w-[365px] md:flex-grow-0 md:gap-1 xl:w-[430px] xl:gap-2">
+        <div
+          ref={searchRef}
+          className="relative flex h-full items-center rounded-full bg-lightPrimary text-navy-700 dark:bg-navy-900 dark:text-white xl:w-[270px]"
+        >
           <p className="pl-3 pr-2 text-xl">
             <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
           </p>
           <input
             type="text"
-            placeholder="Search..."
-            class="block h-full w-full rounded-full bg-lightPrimary text-sm font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white sm:w-fit"
+            value={searchTerm}
+            onFocus={() => setSearchOpen(true)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setSearchOpen(true);
+            }}
+            placeholder="Search deals, contacts, activities..."
+            className="block h-full w-full rounded-full bg-lightPrimary text-sm font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
           />
+
+          {searchOpen && searchTerm.trim().length > 1 ? (
+            <div className="absolute left-0 top-[58px] z-50 max-h-[360px] w-[320px] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-navy-800">
+              {searchLoading ? (
+                <p className="p-2 text-sm text-gray-500 dark:text-gray-300">Searching...</p>
+              ) : !hasResults ? (
+                <p className="p-2 text-sm text-gray-500 dark:text-gray-300">No results found</p>
+              ) : (
+                <div className="space-y-2">
+                  {groupedResults.deals.length > 0 ? (
+                    <div>
+                      <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">Deals</p>
+                      <div className="space-y-1">
+                        {groupedResults.deals.slice(0, 4).map((item, idx) => renderResultButton(item, "deals", idx))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {groupedResults.contacts.length > 0 ? (
+                    <div>
+                      <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">Contacts</p>
+                      <div className="space-y-1">
+                        {groupedResults.contacts.slice(0, 4).map((item, idx) => renderResultButton(item, "contacts", idx))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {groupedResults.activities.length > 0 ? (
+                    <div>
+                      <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">Activities</p>
+                      <div className="space-y-1">
+                        {groupedResults.activities
+                          .slice(0, 4)
+                          .map((item, idx) => renderResultButton(item, "activities", idx))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
         <span
           className="flex cursor-pointer text-xl text-gray-600 dark:text-white xl:hidden"

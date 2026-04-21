@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import MiniCalendar from "components/calendar/MiniCalendar";
 import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
 import TotalSpent from "views/admin/default/components/TotalSpent";
@@ -12,21 +11,16 @@ import CheckTable from "views/rtl/default/components/CheckTable";
 import ComplexTable from "views/rtl/default/components/ComplexTable";
 import DailyTraffic from "views/rtl/default/components/DailyTraffic";
 import TaskCard from "views/rtl/default/components/TaskCard";
-import { dashboardService } from "api/services/dashboard.service";
+import {
+  useDashboardCheckTable,
+  useDashboardComplexTable,
+  useDashboardStats,
+} from "domains/dashboard/hooks";
 
 const Dashboard = () => {
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["dashboard", "stats"],
-    queryFn: dashboardService.getStats,
-  });
-  const { data: checkRaw } = useQuery({
-    queryKey: ["dashboard", "checkTable"],
-    queryFn: dashboardService.getCheckTableData,
-  });
-  const { data: complexRaw } = useQuery({
-    queryKey: ["dashboard", "complexTable"],
-    queryFn: dashboardService.getComplexTableData,
-  });
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: checkRaw } = useDashboardCheckTable();
+  const { data: complexRaw } = useDashboardComplexTable();
 
   const checkTableData = Array.isArray(checkRaw) ? checkRaw : checkRaw?.data || [];
   const complexTableData = Array.isArray(complexRaw) ? complexRaw : complexRaw?.data || [];

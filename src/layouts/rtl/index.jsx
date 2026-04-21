@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "components/navbar/RTL";
 import Sidebar from "components/sidebar/RTL";
+import AssistantPanel from "components/ai/AssistantPanel";
 import Footer from "components/footer/Footer";
 import routes from "routes.js";
 
@@ -91,6 +92,7 @@ export default function RTL(props) {
           </div>
         </main>
       </div>
+      <AssistantPanel />
     </div>
   );
 }
